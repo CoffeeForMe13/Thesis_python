@@ -124,28 +124,13 @@ class PythonCodeForThesis(object):
 
 
   #"""
-  def follow_timed_joint_trajectory(self, positions, times):
 
-    jt = tm.JointTrajectory()
-    jt.joint_names = ['shoulder_pan_joint','shoulder_lift_joint','elbow_joint',
-                    'wrist_1_joint','wrist_2_joint','wrist_3_joint']
-    jt.header.stamp = rospy.Time.now()
-
-    for (position, time) in zip(positions, times):
-        jtp = tm.JointTrajectoryPoint()
-        jtp.positions = position
-        #jtp.velocities = velocity
-        jtp.time_from_start = rospy.Duration(time[0])
-        jt.points.append(jtp)
-    talker(jt)
-    rospy.loginfo("%s: starting %.2f sec traj", "/arm_controller", times[-1])
-    #"""
 
 
 
 #"""
 def talker(message):
-  pub = rospy.Publisher('/arm_controller/command', tm.JointTrajectory, queue_size=10)
+  pub = rospy.Publisher('/pos_joint_traj_controller/command', tm.JointTrajectory, queue_size=10)
   rospy.init_node('Thesis', anonymous=True)
   rate = rospy.Rate(10) # 10hz
   while not rospy.is_shutdown():
@@ -154,31 +139,46 @@ def talker(message):
     rate.sleep()
 #"""
 
+def follow_timed_joint_trajectory(positions, pub):
 
+  jt = tm.JointTrajectory()
+  jt.joint_names = ['shoulder_pan_joint','shoulder_lift_joint','elbow_joint',
+                  'wrist_1_joint','wrist_2_joint','wrist_3_joint']
+  jt.header.stamp = rospy.Time.now()
 
+  for position in positions:
+    jtp = tm.JointTrajectoryPoint()
+    jtp.positions = position[1:]
+    #jtp.velocities = velocity
+    jtp.time_from_start = rospy.Duration(position[0])
+    jt.points.append(jtp)
+
+  print(jt)
+  #rospy.loginfo("%s: starting %.2f sec traj", "/arm_controller", positions[0][-1,0])
+  pub.publish(jt)
+  #"""
 
 def main():
   try:
-    print("============ Press `Enter` to begin ...")
+    print("============ Press `Enter` to begin ...") 
+
+    rospy.init_node('trajectory_execution', anonymous=True)
+    pub = rospy.Publisher('/pos_joint_traj_controller/command', tm.JointTrajectory, queue_size=10)
+    #"""
     raw_input()
-    ur5Method = PythonCodeForThesis()
 
     # Read the csv file
-    reader = csv.reader(open("qc.csv", "rb"), delimiter=",")
+    reader = csv.reader(open("/home/adi/catkin_ws/src/trajectory_execution/csv/qc.csv", "rb"), delimiter=",")
     x = list(reader)
     jointValues = np.array(x).astype("float")
-
-    reader = csv.reader(open("t.csv", "rb"), delimiter=",")
-    x = list(reader)
-    jointTime = np.array(x).astype("float")
     #
 
 
-    ur5Method.go_to_A(jointValues[1,:])
+    follow_timed_joint_trajectory([jointValues[0,:]], pub)
     print("============ Press `Enter` to continue ...")
     raw_input()
 
-    ur5Method.follow_timed_joint_trajectory(jointValues,jointTime)
+    follow_timed_joint_trajectory(jointValues[1:,:], pub)
     #ur5Method.publish_joint_trajectory(jointValues,7)
 
 
