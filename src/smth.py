@@ -168,7 +168,7 @@ def main():
     raw_input()
 
     # Read the csv file
-    reader = csv.reader(open("/home/adi/catkin_ws/src/trajectory_execution/csv/qc.csv", "rb"), delimiter=",")
+    reader = csv.reader(open("/home/adi/catkin_ws/src/trajectory_execution/csv/q_A-B.csv", "rb"), delimiter=",")
     x = list(reader)
     jointValues = np.array(x).astype("float")
     #
