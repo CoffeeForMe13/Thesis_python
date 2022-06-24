@@ -167,10 +167,8 @@ def main():
     reader = csv.reader(open("qc.csv", "rb"), delimiter=",")
     x = list(reader)
     jointValues = np.array(x).astype("float")
-    reader = csv.reader(open("qdc.csv", "rb"), delimiter=",")
-    x = list(reader)
-    jointVel = np.array(x).astype("float")
-    reader = csv.reader(open("times.csv", "rb"), delimiter=",")
+
+    reader = csv.reader(open("t.csv", "rb"), delimiter=",")
     x = list(reader)
     jointTime = np.array(x).astype("float")
     #
